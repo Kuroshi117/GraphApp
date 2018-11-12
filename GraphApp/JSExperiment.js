@@ -1,7 +1,7 @@
 ﻿//ref https://www.august.com.au/blog/animating-scenes-with-webgl-three-js/
 var camera, scene, renderer;
 var geometry, material, mesh;
-var ambientLight,pointLight, shadowMaterial; 
+var ambientLight, pointLight, shadowMaterial; 
 init();
 animate();
 
@@ -32,13 +32,13 @@ function init() {
     shadowMaterial = new THREE.ShadowMaterial({ color:0xbbbbbb });
     shadowMaterial.opacity = 0.5;
 
-    geometry = new THREE.OctahedronGeometry(10,1);
+    geometry = new THREE.SphereGeometry(100, 32, 32);
     material = new THREE.MeshStandardMaterial({
-        color: 0xe0115f,
-        shading: THREE.FlatShading,
+        color: 0xe56baf8,
+        shading: THREE.SmoothShading,
         metalness: 0,
-        roughness: 0.8,
-        alpha:0.5
+        roughness: 0.0,
+        side: THREE.BackSide
     });
     mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = true;
