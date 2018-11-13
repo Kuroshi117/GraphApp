@@ -1,7 +1,10 @@
 ﻿//ref https://www.august.com.au/blog/animating-scenes-with-webgl-three-js/
 var camera, scene, renderer;
 var geometry, material, mesh;
-var ambientLight, pointLight, shadowMaterial; 
+var ambientLight, pointLight, shadowMaterial;
+var controls;
+var clock = new THREE.Clock();
+
 init();
 animate();
 
@@ -32,7 +35,7 @@ function init() {
     shadowMaterial = new THREE.ShadowMaterial({ color:0xbbbbbb });
     shadowMaterial.opacity = 0.5;
 
-    geometry = new THREE.SphereGeometry(100, 32, 32);
+    geometry = new THREE.SphereGeometry(400, 32, 32);
     material = new THREE.MeshStandardMaterial({
         color: 0xe56baf8,
         shading: THREE.SmoothShading,
@@ -44,6 +47,23 @@ function init() {
     mesh.receiveShadow = true;
     scene.add(mesh);
 
+    
+
+    controls = new THREE.FlyControls(camera);
+    controls.movementSpeed = 2;
+    controls.domElement = renderer.domElement;
+    controls.rollSpeed = Math.PI / 150;
+    controls.autoForward = false;
+    controls.dragToLook = false;
+    update();
+}
+
+function update() {
+    controls.update(1);
+    setTimeout(update, 16);
+    draw();
+}
+function draw() {
     renderer.render(scene, camera);
 }
 
@@ -51,12 +71,12 @@ function animate() {
 
     requestAnimationFrame(animate);
 
-    mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.02;
+    //mesh.rotation.x += 0.01;
+    //mesh.rotation.y += 0.02;
 
     renderer.render(scene, camera);
+ 
 
 }
 
-var controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.addEventListener('change', function () { renderer.render(scene, camera); });
+
