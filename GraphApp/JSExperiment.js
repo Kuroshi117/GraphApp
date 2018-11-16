@@ -3,7 +3,7 @@ var camera, scene, renderer;
 var geometry, material, mesh;
 var ambientLight, pointLight, shadowMaterial;
 var controls, playMesh;
-var playBound, sphereBound; 
+var playBound, sphereBound, helper; 
 
 
 var clock = new THREE.Clock();
@@ -21,7 +21,7 @@ function init() {
     playMesh = new THREE.Mesh(new THREE.CubeGeometry(5, 5, 5, 1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));//dummy mesh
     playMesh.position.set(0, 0, 0);
     playMesh.add(camera);
-    playBound = new THREE.Box3(playMesh.geometry.min, playMesh.geometry.max);
+    playBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
 
     scene = new THREE.Scene();
 
@@ -49,15 +49,15 @@ function init() {
     geometry = new THREE.SphereGeometry(400, 32, 32);
     material = new THREE.MeshStandardMaterial({
         color: 0xe56baf8,
-        shading: THREE.FlatShading,//change to SmoothShading
+        shading: THREE.SmoothShading,//change to SmoothShading
         metalness: 0,
         roughness: 0.0,
         side: THREE.BackSide
     });
     mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = true;
-    sphereBound = new THREE.Sphere(mesh.position, mesh.geometry.radius);
-
+    mesh.geometry.computeBoundingSphere();
+    sphereBound = new THREE.Sphere(mesh.position, mesh.geometry.boundingSphere.radius);
     scene.add(mesh);
 
     controls = new THREE.FlyControls(playMesh);
@@ -73,8 +73,17 @@ function update() {
     controls.update(1);
     setTimeout(update, 16);
     draw();
-
-    //keep player in sphere
+    playBound.setFromObject(playMesh);
+   
+    if (playBound.intersectsSphere(sphereBound)) {
+        mesh.material.color.setHex(0xe56baf8);
+        
+    }
+    else {
+        mesh.material.color.setHex(0x9540E4);
+        playMesh.position.set(0, 0, 0);
+    }
+    
     
 }
 function draw() {
