@@ -3,12 +3,9 @@ var camera, scene, renderer;
 var geometry, material, mesh;
 var ambientLight, pointLight, shadowMaterial;
 var controls, playMesh;
-var playBound, sphereBound, helper; 
-
+var playBound, sphereBound;
 
 var clock = new THREE.Clock();
-
-
 
 init();
 animate();
@@ -49,7 +46,7 @@ function init() {
     geometry = new THREE.SphereGeometry(400, 32, 32);
     material = new THREE.MeshStandardMaterial({
         color: 0xe56baf8,
-        shading: THREE.SmoothShading,//change to SmoothShading
+        shading: THREE.FlatShading,//change to SmoothShading
         metalness: 0,
         roughness: 0.0,
         side: THREE.BackSide
@@ -67,6 +64,15 @@ function init() {
     controls.autoForward = false;
     controls.dragToLook = false;
     update();
+
+    window.addEventListener('resize', onWindowResize, false);
+}
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 function update() {
@@ -83,19 +89,14 @@ function update() {
         mesh.material.color.setHex(0x9540E4);
         playMesh.position.set(0, 0, 0);
     }
-    
-    
 }
 function draw() {
     renderer.render(scene, camera);
 }
 
 function animate() {
-
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
- 
-
 }
 
 
