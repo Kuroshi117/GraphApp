@@ -1,16 +1,17 @@
-﻿//ref https://www.august.com.au/blog/animating-scenes-with-webgl-three-js/
-var camera, scene, renderer;
+﻿var camera, scene, renderer;
 var geometry, material, mesh;
 var ambientLight, pointLight, shadowMaterial;
 var controls, playMesh;
 var playBound, sphereBound;
 
+var torusKnot, torusKnotBound;
+
 var clock = new THREE.Clock();
 
 init();
-animate();
 
 function init() {
+    scene = new THREE.Scene();
 
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
     camera.position.set(0, 5, 20);
@@ -19,10 +20,9 @@ function init() {
     playMesh.position.set(0, 0, 0);
     playMesh.add(camera);
     playBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-
-    scene = new THREE.Scene();
-
     scene.add(playMesh);
+
+    addObjects();
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -78,9 +78,13 @@ function onWindowResize() {
 function update() {
     controls.update(1);
     setTimeout(update, 16);
-    draw();
+    renderer.render(scene, camera);
+
     playBound.setFromObject(playMesh);
-   
+    torusKnotBound.setFromObject(torusKnot);
+
+    torusKnot.rotation.x += 0.01;
+
     if (playBound.intersectsSphere(sphereBound)) {
         mesh.material.color.setHex(0xe56baf8);
         
@@ -89,14 +93,21 @@ function update() {
         mesh.material.color.setHex(0x9540E4);
         playMesh.position.set(0, 0, 0);
     }
-}
-function draw() {
-    renderer.render(scene, camera);
+
+    
+    if (playBound.isIntersectionBox(torusKnotBound)) {
+        torusKnot.material.wireframe=true;
+    }
+    else { torusKnot.material.wireframe = false;}
 }
 
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+function addObjects(){
+    torusKnot = new THREE.Mesh(new THREE.TorusKnotGeometry(100, 25, 100), new THREE.MeshNormalMaterial({}));
+    torusKnot.position.set(0, 0, -200);
+    torusKnot.geometry.computeBoundingBox();
+    torusKnotBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    scene.add(torusKnot);
 }
+
 
 
