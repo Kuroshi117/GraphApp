@@ -5,6 +5,7 @@ var controls, playMesh;
 var playBound, sphereBound;
 
 var torusKnot, torusKnotBound;
+var torusRing, torusRingBound;
 
 var clock = new THREE.Clock();
 
@@ -16,6 +17,7 @@ function init() {
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
     camera.position.set(0, 5, 20);
 
+    
     playMesh = new THREE.Mesh(new THREE.CubeGeometry(5, 5, 5, 1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000 }));//dummy mesh
     playMesh.position.set(0, 0, 0);
     playMesh.add(camera);
@@ -46,7 +48,7 @@ function init() {
     geometry = new THREE.SphereGeometry(400, 32, 32);
     material = new THREE.MeshStandardMaterial({
         color: 0xe56baf8,
-        shading: THREE.FlatShading,//change to SmoothShading
+        shading: THREE.SmoothShading,//change to SmoothShading
         metalness: 0,
         roughness: 0.0,
         side: THREE.BackSide
@@ -83,22 +85,32 @@ function update() {
     playBound.setFromObject(playMesh);
     torusKnotBound.setFromObject(torusKnot);
 
+    objectInteraction();
+}
+
+function objectInteraction() {
     torusKnot.rotation.x += 0.01;
+    torusRing.rotation.y += 0.01;
 
     if (playBound.intersectsSphere(sphereBound)) {
         mesh.material.color.setHex(0xe56baf8);
-        
+
     }
     else {
         mesh.material.color.setHex(0x9540E4);
         playMesh.position.set(0, 0, 0);
     }
 
-    
+
     if (playBound.isIntersectionBox(torusKnotBound)) {
-        torusKnot.material.wireframe=true;
+        torusKnot.material.wireframe = true;
     }
-    else { torusKnot.material.wireframe = false;}
+    else { torusKnot.material.wireframe = false; }
+
+    /*if (playBound.isIntersectionBox(torusRingBound)) {
+        
+    }
+    else {  }*/
 }
 
 function addObjects(){
@@ -107,7 +119,14 @@ function addObjects(){
     torusKnot.geometry.computeBoundingBox();
     torusKnotBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
     scene.add(torusKnot);
+
+    torusRing = new THREE.Mesh(new THREE.TorusGeometry(100, 25, 100, 100), new THREE.MeshStandardMaterial({
+        color: 0x8e6c,
+        shading: THREE.SmoothShading
+    }));
+    torusRing.position.set(0, -200, 200);
+    torusRing.receiveShadow = true;
+    torusRing.geometry.computeBoundingBox();
+    torusRingBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    scene.add(torusRing);
 }
-
-
-
