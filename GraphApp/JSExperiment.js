@@ -2,12 +2,15 @@
 var geometry, material, mesh;
 var ambientLight, pointLight, shadowMaterial;
 var controls, playMesh;
-var wingMesh, propellerMesh, tailMesh, propellerMesh;
+var wingMesh, propellerMesh, tailMesh, flipperMesh, engineMesh;
 var playBound, sphereBound;
 
 var torusKnot, torusKnotBound;
 var torusRing, torusRingBound;
+var icoMesh, icoBound;
 
+var particleKnot;
+var starGeo, starMat, starField;
 var clock = new THREE.Clock();
 
 init();
@@ -24,14 +27,14 @@ function init() {
         playMesh = result.scene;
         playMesh.position.set(0, 0, 0);
         playMesh.add(camera);
-        var cubemesh = new THREE.Mesh(new THREE.CubeGeometry(1, 1, 7), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
         playBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
         playMesh.receiveShadow = true;
         scene.add(playMesh);
     });*/
 
     createAirPlane();
-    addObjects();
+    createObjects();
+    //createParticles();
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -56,10 +59,11 @@ function init() {
     geometry = new THREE.SphereGeometry(400, 32, 32);
     material = new THREE.MeshStandardMaterial({
         color: 0xe56baf8,
-        shading: THREE.SmoothShading,//change to SmoothShading
+        shading: THREE.SmoothShading,
         metalness: 0,
         roughness: 0.0,
         side: THREE.BackSide
+        //,wireframe: true
     });
     mesh = new THREE.Mesh(geometry, material);
     mesh.receiveShadow = true;
@@ -104,7 +108,12 @@ function update() {
 
 function objectInteraction() {
     torusKnot.rotation.x += 0.01;
+    torusKnot.rotation.y += 0.01;
+
     torusRing.rotation.y += 0.01;
+
+    icoMesh.rotation.x += 0.01;
+
 
     if (playBound.intersectsSphere(sphereBound)) {
         mesh.material.color.setHex(0xe56baf8);
@@ -122,21 +131,83 @@ function objectInteraction() {
     else { torusKnot.material.wireframe = false; }
 
     if (playBound.intersectsBox(torusRingBound)) {
-        torusRing.material.wireframe = true;
+        if (torusRing.scale.x < 2) {
+            torusRing.scale.x += 0.1;
+        }
+        if (torusRing.scale.y < 2) {
+            torusRing.scale.y += 0.1;
+        }
+        if (torusRing.scale.y < 2) {
+            torusRing.scale.y += 0.1;
+        }
     }
     else {
-        torusRing.material.wireframe = false;
+        if (torusRing.scale.x > 1) {
+            torusRing.scale.x -= 0.1;
+        }
+        if (torusRing.scale.y > 1) {
+            torusRing.scale.y -= 0.1;
+        }
+        if (torusRing.scale.y > 1) {
+            torusRing.scale.y -= 0.1;
+        }
     }
+
 }
 
-function addObjects(){
-    torusKnot = new THREE.Mesh(new THREE.TorusKnotGeometry(100, 25, 100), new THREE.MeshNormalMaterial({}));
-    torusKnot.position.set(0, 0, -200);
+function createAirPlane() {
+    playMesh = new THREE.Mesh(new THREE.CubeGeometry(2, 2, 8, 1, 1, 1), new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.FlatShading }));
+    playMesh.position.set(0, -50, 0);
+
+    wingMesh = new THREE.Mesh(new THREE.CubeGeometry(16, 0.5, 3, 1, 1, 1), new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.FlatShading }));
+    wingMesh.position.z = -2;
+    wingMesh.position.y = 0.2;
+    wingMesh.receiveShadow = true;
+    wingMesh.castShadow = true;
+    playMesh.add(wingMesh);
+
+    engineMesh = new THREE.Mesh(new THREE.CubeGeometry(2, 2, 1, 1, 1, 1), new THREE.MeshPhongMaterial({ color: 0xffffff, shading: THREE.FlatShading }));
+    engineMesh.position.z = -4.5;
+    engineMesh.receiveShadow = true;
+    engineMesh.castShadow = true;
+    playMesh.add(engineMesh);
+
+    propellerMesh = new THREE.Mesh(new THREE.CubeGeometry(6, 0.80, 0.2, 1, 1, 1), new THREE.MeshPhongMaterial({ color: 0x00000, shading: THREE.FlatShading }));
+    propellerMesh.position.z = -5.2;
+    propellerMesh.receiveShadow = true;
+    propellerMesh.castShadow = true;
+    playMesh.add(propellerMesh);
+
+    flipperMesh = new THREE.Mesh(new THREE.CubeGeometry(6, 0.5, 1.5, 1, 1, 1), new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.FlatShading }));
+    flipperMesh.position.z = 3;
+    flipperMesh.position.y = 0.2;
+    flipperMesh.receiveShadow = true;
+    flipperMesh.castShadow = true;
+    playMesh.add(flipperMesh);
+
+    tailMesh = new THREE.Mesh(new THREE.CubeGeometry(0.5, 3, 1.5, 1, 1, 1), new THREE.MeshPhongMaterial({ color: 0xff0000, shading: THREE.FlatShading }));
+    tailMesh.position.z = 3;
+    tailMesh.position.y = 1;
+    tailMesh.receiveShadow = true;
+    tailMesh.castShadow = true;
+    playMesh.add(tailMesh);
+
+    playMesh.add(camera);
+    playBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    playMesh.receiveShadow = true;
+    playMesh.castShadow = true;
+    scene.add(playMesh);
+}
+
+function createObjects() {
+    torusKnot = new THREE.Mesh(new THREE.TorusKnotGeometry(100, 25, 100), new THREE.MeshNormalMaterial({/*transparent:true,opacity:0.8*/}));
+    torusKnot.position.set(0, 0, 0);
     torusKnot.geometry.computeBoundingBox();
     torusKnotBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    //torusKnot.castShadow=true;
     scene.add(torusKnot);
 
-    torusRing = new THREE.Mesh(new THREE.TorusGeometry(60, 20, 50, 50), new THREE.MeshStandardMaterial({
+    torusRing = new THREE.Mesh(new THREE.TorusGeometry(40, 15, 40, 50), new THREE.MeshStandardMaterial({
         color: 0x8e6c,
         shading: THREE.SmoothShading
     }));
@@ -144,44 +215,40 @@ function addObjects(){
     torusRing.receiveShadow = true;
     torusRing.geometry.computeBoundingBox();
     torusRingBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
+    torusRing.castShadow = true;
     scene.add(torusRing);
+
+    
+    icoMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(50, 1), icomat = new THREE.MeshPhongMaterial({
+        color: 0xe73445,
+        shading: THREE.FlatShading,
+        emmissive: 0xe73445,
+        shininess: 100
+    }));
+    icoMesh.position.set(50, 0, -200);
+    icoMesh.receiveShadow = true;
+    icoMesh.castShadow = true;
+    icoMesh.geometry.computeBoundingSphere();
+    icoBound = new THREE.Sphere(icoMesh.position, icoMesh.geometry.boundingSphere.radius);
+    scene.add(icoMesh);
 }
 
-function createAirPlane() {
-    playMesh = new THREE.Mesh(new THREE.CubeGeometry(2, 2, 8, 1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000, shading: THREE.FlatShading }));
-    playMesh.position.set(0, 0, 0);
+function createParticles() {
+    starGeo = new THREE.Geometry();
+    for (var i = 0; i < 10000; i++) {
+        var star = new THREE.Vector3();
+        star.x = THREE.Math.randFloatSpread(2000);
+        star.y = THREE.Math.randFloatSpread(2000);
+        star.z = THREE.Math.randFloatSpread(2000);
 
-    wingMesh = new THREE.Mesh(new THREE.CubeGeometry(16, 0.5, 3, 1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000, shading: THREE.FlatShading }));
-    wingMesh.position.z = -2;
-    wingMesh.position.y = 0.2;
-    wingMesh.receiveShadow = true;
-    playMesh.add(wingMesh);
+        starGeo.vertices.push(star);
 
-    engineMesh = new THREE.Mesh(new THREE.CubeGeometry(2, 2, 1, 1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xffffff, shading: THREE.FlatShading }));
-    engineMesh.position.z = -4.5;
-    engineMesh.receiveShadow = true;
-    playMesh.add(engineMesh);
+    }
+    starMat = new THREE.PointsMaterial({ color: 0xfdfd96 });
+    starField = new THREE.Points(starGeo, starMat);
+    scene.add(starField);
 
-    propellerMesh = new THREE.Mesh(new THREE.CubeGeometry(6, 0.80, 0.2, 1, 1, 1), new THREE.MeshBasicMaterial({ color: 0x00000, shading: THREE.FlatShading }));
-    propellerMesh.position.z = -5.2;
-    propellerMesh.receiveShadow = true;
-    playMesh.add(propellerMesh);
-
-    flipperMesh = new THREE.Mesh(new THREE.CubeGeometry(6, 0.5, 1.5, 1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000, shading: THREE.FlatShading }));
-    flipperMesh.position.z = 3;
-    flipperMesh.position.y = 0.2;
-    flipperMesh.receiveShadow = true;
-    playMesh.add(flipperMesh);
-
-    tailMesh = new THREE.Mesh(new THREE.CubeGeometry(0.5, 3, 1.5, 1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff0000, shading: THREE.FlatShading }));
-    tailMesh.position.z = 3;
-    tailMesh.position.y = 1;
-    tailMesh.receiveShadow = true;
-    playMesh.add(tailMesh);
-
-    playMesh.add(camera);
-    playBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-    playMesh.receiveShadow = true;
-    scene.add(playMesh);
+    particleKnot = new THREE.Points(new THREE.TorusKnotGeometry(200, 50, 100), new THREE.PointsMaterial({ color: 0x9540E4 }));
+    scene.add(particleKnot);
+    
 }
-
