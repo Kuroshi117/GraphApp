@@ -13,6 +13,9 @@ var parentOrbit, planetOrbit1, planetOrbit2, planetOrbit3;
 
 var particleKnot;
 var starGeo, starMat, starField;
+
+var listener, sound, audioLoader ;
+
 var clock = new THREE.Clock();
 
 init();
@@ -23,20 +26,13 @@ function init() {
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
     camera.position.set(0, 7, 20);
 
-    var loader = new THREE.ColladaLoader();
+   
 
-    /*loader.load('http://localhost:4173/airplane.dae', function (result) {
-        playMesh = result.scene;
-        playMesh.position.set(0, 0, 0);
-        playMesh.add(camera);
-        playBound = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3());
-        playMesh.receiveShadow = true;
-        scene.add(playMesh);
-    });*/
     createSphere();
     createLights();
     createAirPlane();
     createObjects();
+    createAudio();
     //createParticles();
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -80,6 +76,7 @@ function update() {
     propellerMesh.rotation.z += 0.1;
 
     objectInteraction();
+    animateSea();
 }
 
 function objectInteraction() {
@@ -176,6 +173,21 @@ function objectInteraction() {
 
 function createSphere() {
     geometry = new THREE.SphereGeometry(400, 32, 32);
+    geometry.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI / 2));
+    geometry.mergeVertices();
+    var l = geometry.vertices.length;
+    this.waves = [];
+    for (var i = 0; i < l; i++) {
+        var v = geometry.vertices[i];
+        this.waves.push({
+            y: v.y,
+            x: v.x,
+            z: v.z,
+            ang: Math.random() * Math.PI * 2,
+            amp: 3 + Math.random() * 5,
+            speed: 0.016 + Math.random() * 0.032
+        });
+    };
     material = new THREE.MeshStandardMaterial({
         color: 0xe56baf8,
         shading: THREE.FlatShading,
@@ -190,6 +202,26 @@ function createSphere() {
     sphereBound = new THREE.Sphere(mesh.position, mesh.geometry.boundingSphere.radius);
     scene.add(mesh);
 
+}
+
+function animateSea() {
+    var verts = mesh.geometry.vertices;
+    var l = verts.length;
+
+    for (var i = 0; i < l; i++) {
+        var v = verts[i];
+
+        var vprops = this.waves[i];
+
+        v.x = vprops.x + Math.cos(vprops.ang) * vprops.amp;
+        v.y = vprops.y + Math.sin(vprops.ang) * vprops.amp;
+
+
+        vprops.ang += vprops.speed;
+
+    }
+    mesh.geometry.verticesNeedUpdate = true;
+    mesh.rotation.z += .005;
 }
 
 function createLights() {
@@ -363,4 +395,19 @@ function createParticles() {
 
 
     
+}
+
+function createAudio() {
+    listener = new THREE.AudioListener();
+    camera.add(listener);
+
+    sound = new THREE.Audio(listener);
+
+    audioLoader = new THREE.AudioLoader();
+    audioLoader.load('Gymnopedie No 1.mp3', function (buffer) {
+        sound.setBuffer(buffer);
+        sound.setLoop(true);
+        sound.setVolume(1);
+        sound.play();
+    })
 }
