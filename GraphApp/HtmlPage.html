@@ -19,13 +19,26 @@
             left: 0px;
             top: 0px;
         }
+        #info {
+            font-family:Georgia;
+            color: white;
+            font-size:24px;
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+        }
     </style>
 </head>
 <body>
+    <div id="info">WASD to move.<br /> QE to rotate.<br /> Mouse to look.</div>
     <canvas id='cv'></canvas>
     <script src="three.js"></script>
     <script src="FlyControls.js"></script>
     <script src="ColladaLoader.js"></script>
     <script src="JSExperiment.js"></script>
 </body>
+
 </html>
